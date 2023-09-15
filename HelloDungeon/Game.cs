@@ -39,13 +39,24 @@ namespace HelloDungeon
         bool gameOver = false;
         int currentScene = 0;
         string playerChoice = "";
-        
+
         //Various characters
         Character manWithLargeStick;
         Character manWithAlligator;
         Character gunDude;
 
         Character player;
+        int[] grades = new int[4] { 1, 2, 3, 4};
+        int PrintArraySum(int i)
+        {
+            for(i = 0; i < grades.Length; i++)
+            {
+                Console.Write(grades[i]);
+            }
+            int sum = i;
+            Console.WriteLine(sum);
+            return sum;
+        }
 
         //Damage calculation function
         float Attack(Character attacker,Character defender)
@@ -159,13 +170,23 @@ namespace HelloDungeon
         //Winner display screen
         void WinResultScene()
         {
+            //Draws monkey character 
+            Console.WriteLine("     __\n" +
+                               "w  c(..)o   (\n" +
+                               " \\__(-)   __)\n" +
+                               "    /|   (\n" +
+                               "   /(_)___)\n" +
+                               "  w /|\n" +
+                               "   \\  \n" +
+                               "    m m");
+
             if (player.Health > 0f && gunDude.Health <= 0f)
             {
-                Console.WriteLine("The winner is: " + player.Name);
+                Console.WriteLine("The monkey congratulates: " + player.Name);
             }
             else if (gunDude.Health > 0f && player.Health <= 0f)
             {
-                Console.WriteLine("The winner is: " + gunDude.Name);
+                Console.WriteLine("The monkey congratulates: " + gunDude.Name);
             }
             Console.ReadKey(true);
             Console.Clear();
@@ -234,6 +255,13 @@ namespace HelloDungeon
         }
         public void Run()
         {
+            PrintArraySum(0);
+            return;
+
+            //Print all numbers in array
+
+            return;
+
             Start();
 
             //Overall game loop
