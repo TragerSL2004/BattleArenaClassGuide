@@ -44,19 +44,75 @@ namespace HelloDungeon
         Character manWithLargeStick;
         Character manWithAlligator;
         Character gunDude;
+        Character[] Enemies;
+        int currentEnemyIndex = 0;
 
         Character player;
-        int[] grades = new int[4] { 1, 2, 3, 4};
-        int PrintArraySum(int i)
+        int[] numbers = new int[4] { 1, 45, 3, 7};
+        int PrintArraySum(int[] numbers)
         {
-            for(i = 0; i < grades.Length; i++)
+            int sum = 0;
+            for (int i = 0; i < numbers.Length; i++)
             {
-                Console.Write(grades[i]);
+                sum += numbers[i];
             }
-            int sum = i;
             Console.WriteLine(sum);
             return sum;
         }
+        void PrintLargestNumber(int[] numbers)
+        { 
+            int LargestNumber = numbers[0];
+            for (int i = 0; i < numbers.Length; i++)
+            { 
+                if (numbers[i] > LargestNumber)
+                {
+                    LargestNumber = numbers[i];
+                }
+            }
+            Console.WriteLine(LargestNumber);
+        }
+        string DisplayMenu(string prompt, string option1, string option2, string option3, string option4)
+        {
+            playerChoice = "";
+            while (playerChoice != "1" && playerChoice != "2" && playerChoice != "3" && playerChoice != "4")
+            {
+                //Display prompt
+                Console.Clear();
+                Console.WriteLine(prompt);
+
+                //Display all options
+                Console.WriteLine("1." + option1);
+                Console.WriteLine("2." + option2);
+                if (option3 != "")
+                {
+                    Console.WriteLine("3." + option3);
+                }
+                if (option4 != "")
+                {
+                    Console.WriteLine("4." + option4);
+                }
+                //Get player input
+                Console.Write(">");
+                playerChoice = Console.ReadLine();
+
+
+                if (playerChoice != "1" && playerChoice != "2")
+                {
+                    if (playerChoice == "3" && option3 != "" || playerChoice == "4" && option4 != "")
+                    {
+                        continue;
+                    }
+                    //Incorrect input notification
+                    Console.WriteLine("That's not an option, traveler!");
+                    Console.WriteLine("Press any key to continue");
+                    Console.ReadKey(true);
+
+                    playerChoice = "";
+                }
+            }
+            return playerChoice;
+        }
+
 
         //Damage calculation function
         float Attack(Character attacker,Character defender)
@@ -119,6 +175,7 @@ namespace HelloDungeon
                 Console.ReadKey(true);
                 Console.Clear();
             }
+            Console.Clear();
         }
         
         //Battle until a character dies
@@ -126,15 +183,16 @@ namespace HelloDungeon
         {
             PrintStats(player);
             playerChoice = "";
-            Console.WriteLine("Oh no! You are approached by a dude in a suit holding a gun! What will you do?");
+            Console.WriteLine("Oh no! You are approached by a shady dude! What will you do?");
             Console.WriteLine("1.Fight him!");
             Console.WriteLine("2.Defend yourself and pray!");
+            Console.WriteLine("3.Chug an ice cold brewski and heal!");
             playerChoice = Console.ReadLine();
 
             bool isDefending = false;
             if (playerChoice == "1")
             {
-                Fight(ref player, ref gunDude);
+                Fight(ref player, ref Enemies[currentEnemyIndex]);
 
                 Console.Clear();
             }
@@ -145,11 +203,10 @@ namespace HelloDungeon
                 player.Defense *= 4f;
                 Console.WriteLine("You put your weapon in front of you to guard against the attack!");
                 PrintStats(player);
-                PrintStats(gunDude);
-                Console.WriteLine(gunDude.Name + " won't let up on " + player.Name + "!!!");
-                player.Health = Attack(gunDude, player);
+                Console.WriteLine(Enemies[currentEnemyIndex].Name + " won't let up on " + player.Name + "!!!");
+                player.Health = Attack(Enemies[currentEnemyIndex], player);
                 PrintStats(player);
-                PrintStats(gunDude);
+                PrintStats(Enemies[currentEnemyIndex]);
                 Console.ReadKey();
                 Console.Clear();
                 if (isDefending == true)
@@ -158,13 +215,18 @@ namespace HelloDungeon
                 }
 
             }
-            if (player.Health <= 0 || gunDude.Health <= 0)
+            else if (playerChoice == "3")
+            {
+
+
+                Console.WriteLine("Your Florida man chugs his Bud Lite!");
+                Console.WriteLine(Healing(player, 35.7f));
+
+            }
+            if (player.Health <= 0 || Enemies[currentEnemyIndex].Health <= 0)
             {
                 currentScene = 2;
             }
-
-            //Console.WriteLine("The Florida man chugs his Bud Lite!");
-            //Console.WriteLine(Healing(ManWithLargeStick, 35.7f));
         }
 
         //Winner display screen
@@ -180,35 +242,56 @@ namespace HelloDungeon
                                "   \\  \n" +
                                "    m m");
 
-            if (player.Health > 0f && gunDude.Health <= 0f)
+            if (player.Health > 0f && Enemies[currentEnemyIndex].Health <= 0f)
             {
                 Console.WriteLine("The monkey congratulates: " + player.Name);
+                currentScene = 1;
+                currentEnemyIndex++;
             }
-            else if (gunDude.Health > 0f && player.Health <= 0f)
+            else if (Enemies[currentEnemyIndex].Health > 0f && player.Health <= 0f)
             {
-                Console.WriteLine("The monkey congratulates: " + gunDude.Name);
+                Console.WriteLine("The monkey congratulates: " + Enemies[currentEnemyIndex].Name);
+                currentScene = 3;
             }
             Console.ReadKey(true);
             Console.Clear();
+        }
+        void EndGameScreen()
+        {
+            string playerChoice = DisplayMenu("The battles have ended, do you wish to play again?", "1.Yes", "2.No", "", "");
+            if (playerChoice == "1")
+            { 
+                Console.WriteLine("Press any key to continue");
+                Console.ReadKey();
+                currentScene = 0;
+            }
+            else if (playerChoice == "2")
+            {
+
+            }
         }
         
         //Pre-game initilization 
         void Start()
         {
+            //Florida man with a stick weapon
             Weapon TruthStick;
             TruthStick.Name = "Truth Hurts";
             TruthStick.Damage = 50f;
             TruthStick.StaminaUsage = 2f;
 
+            //Florida man ultimate weapon
             Weapon Alligator;
             Alligator.Name = "Steve the Sentient Alligator Sword";
-            Alligator.Damage = 100f;
+            Alligator.Damage = 200f;
             Alligator.StaminaUsage = 60f;
 
+            //Gun dude weapon
             Weapon Gun;
             Gun.Name = "Literally just a gun";
             Gun.Damage = 100f;
             Gun.StaminaUsage = 10f;
+
             manWithLargeStick.Name = "Florida Man with a large stick";
             manWithLargeStick.Health = 300f;
             manWithLargeStick.Damage = 69.420f;
@@ -221,7 +304,7 @@ namespace HelloDungeon
             manWithAlligator.Defense = 50f;
             manWithAlligator.Stamina = 60.0f;
 
-            gunDude.Name = "Dude with a gun";
+            gunDude.Name = "Florida with a gun";
             gunDude.Health = 200f;
             gunDude.Damage = 100f;
             gunDude.Defense = 0f;
@@ -230,6 +313,8 @@ namespace HelloDungeon
             manWithLargeStick.CurrentWeapon = TruthStick;
             manWithAlligator.CurrentWeapon = Alligator;
             gunDude.CurrentWeapon = Gun;
+
+            Enemies = new Character[3] { manWithLargeStick, gunDude, manWithAlligator };
         }
 
         void Update()
@@ -246,6 +331,10 @@ namespace HelloDungeon
             {
                 WinResultScene();
             }
+            else if (currentScene == 3)
+            {
+                EndGameScreen();
+            }
         }
 
         //Game ending message
@@ -255,13 +344,6 @@ namespace HelloDungeon
         }
         public void Run()
         {
-            PrintArraySum(0);
-            return;
-
-            //Print all numbers in array
-
-            return;
-
             Start();
 
             //Overall game loop
