@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 
 namespace HelloDungeon
 {
-    class Game
-    {
         //Weapon Struct
         struct Weapon
         {
@@ -15,26 +13,8 @@ namespace HelloDungeon
             public float Damage;
             public float StaminaUsage;
         }
-        //Print player and opponet stats
-        void PrintStats(Character character)
-        {
-            Console.WriteLine("Name: " + character.Name);
-            Console.WriteLine("Health: " + character.Health);
-            Console.WriteLine("Damage: " + character.Damage + "+" + character.CurrentWeapon.Damage);
-            Console.WriteLine("Defense: " + character.Defense);
-            Console.WriteLine("Stamina: " + character.Stamina);
-            Console.WriteLine("Weapon: " + character.CurrentWeapon.Name);
-        }
-        //struct for player and opponent
-        struct Character
-        {
-            public string Name;
-            public float Health;
-            public float Damage;
-            public float Defense;
-            public float Stamina;
-            public Weapon CurrentWeapon;
-        }
+    class Game
+    {
 
         bool gameOver = false;
         int currentScene = 0;
@@ -113,35 +93,27 @@ namespace HelloDungeon
             return playerChoice;
         }
 
-
-        //Damage calculation function
-        float Attack(Character attacker,Character defender)
-        {
-            float totalDamage = attacker.Damage + attacker.CurrentWeapon.Damage - defender.Defense;
-            return defender.Health - totalDamage;
-        }
-
         //Combat loop
         void Fight(ref Character Character1, ref Character Character2)
         {
-            Console.WriteLine(Character1.Name + " yeets their " +  player.CurrentWeapon.Name + " at " + Character2.Name + "!!!");
-            Character2.Health = Attack(Character1, Character2);
+            Console.WriteLine(player.GetName() + " yeets their " +  player.GetWeapon().Name + " at " + Character2.GetName() + "!!!");
+            Character2.TakeDamage(player.GetDamage());
 
             Console.ReadKey(true);
-            PrintStats(Character1);
-            PrintStats(Character2);
+            player.PrintStats();
+            Character2.PrintStats();
 
-            Console.WriteLine(Character2.Name + " fires on " + Character1.Name + "!!!");
-            Character1.Health = Attack(Character2, Character1);
-
-            PrintStats(Character1);
-            PrintStats(Character2);
+            Console.WriteLine(Character2.GetName() + " fires on " + Character1.GetName() + "!!!");
+            Character1.TakeDamage(Character2.GetDamage());
+            
+            player.PrintStats();
+            Character2.PrintStats();
         }
         
         //Heal function
         float Healing(Character healTarget, float healAmount)
         {
-            return healTarget.Health + healAmount;
+            return healTarget.GetHealth() + healAmount;
         }
         
         //Character selection menu
@@ -181,7 +153,7 @@ namespace HelloDungeon
         //Battle until a character dies
         void BattleScene()
         {
-            PrintStats(player);
+            player.PrintStats();
             playerChoice = "";
             Console.WriteLine("Oh no! You are approached by a shady dude! What will you do?");
             Console.WriteLine("1.Fight him!");
@@ -192,26 +164,25 @@ namespace HelloDungeon
             bool isDefending = false;
             if (playerChoice == "1")
             {
-                Fight(ref player, ref Enemies[currentEnemyIndex]);
-
+                Enemies[currentEnemyIndex].TakeDamage(player.GetDamage());
                 Console.Clear();
             }
             else if (playerChoice == "2")
             {
                 Console.Clear();
                 isDefending = true;
-                player.Defense *= 4f;
+                player.BoostDefense(150f);
                 Console.WriteLine("You put your weapon in front of you to guard against the attack!");
-                PrintStats(player);
-                Console.WriteLine(Enemies[currentEnemyIndex].Name + " won't let up on " + player.Name + "!!!");
-                player.Health = Attack(Enemies[currentEnemyIndex], player);
-                PrintStats(player);
-                PrintStats(Enemies[currentEnemyIndex]);
+                player.PrintStats();
+                Console.WriteLine(Enemies[currentEnemyIndex].GetName() + " won't let up on " + player.GetName() + "!!!");
+                player.TakeDamage(Enemies[currentEnemyIndex].GetDamage());
+                player.PrintStats();
+                Enemies[currentEnemyIndex].PrintStats();
                 Console.ReadKey();
                 Console.Clear();
                 if (isDefending == true)
                 {
-                    player.Defense /= 4f;
+                    player.ResetDefense();
                 }
 
             }
@@ -223,7 +194,7 @@ namespace HelloDungeon
                 Console.WriteLine(Healing(player, 35.7f));
 
             }
-            if (player.Health <= 0 || Enemies[currentEnemyIndex].Health <= 0)
+            if (player.GetHealth() <= 0 || Enemies[currentEnemyIndex].GetHealth() <= 0)
             {
                 currentScene = 2;
             }
@@ -242,15 +213,15 @@ namespace HelloDungeon
                                "   \\  \n" +
                                "    m m");
 
-            if (player.Health > 0f && Enemies[currentEnemyIndex].Health <= 0f)
+            if (player.GetHealth() > 0f && Enemies[currentEnemyIndex].GetHealth() <= 0f)
             {
-                Console.WriteLine("The monkey congratulates: " + player.Name);
+                Console.WriteLine("The monkey congratulates: " + player.GetName());
                 currentScene = 1;
                 currentEnemyIndex++;
             }
-            else if (Enemies[currentEnemyIndex].Health > 0f && player.Health <= 0f)
+            else if (Enemies[currentEnemyIndex].GetHealth() > 0f && player.GetHealth() <= 0f)
             {
-                Console.WriteLine("The monkey congratulates: " + Enemies[currentEnemyIndex].Name);
+                Console.WriteLine("The monkey congratulates: " + Enemies[currentEnemyIndex].GetName());
                 currentScene = 3;
             }
             Console.ReadKey(true);
@@ -265,13 +236,13 @@ namespace HelloDungeon
                 Console.ReadKey();
                 currentScene = 0;
             }
-            else if (playerChoice == "2")
+            else
             {
 
             }
         }
         
-        //Pre-game initilization 
+        //Pre-game initilization
         void Start()
         {
             //Florida man with a stick weapon
@@ -292,27 +263,11 @@ namespace HelloDungeon
             Gun.Damage = 100f;
             Gun.StaminaUsage = 10f;
 
-            manWithLargeStick.Name = "Florida Man with a large stick";
-            manWithLargeStick.Health = 300f;
-            manWithLargeStick.Damage = 69.420f;
-            manWithLargeStick.Defense = 0.6f;
-            manWithLargeStick.Stamina = 10.0f;
+            manWithLargeStick = new Character("Florida Man with a large stick", 300f, 69.420f, 0.6f, 10.0f, TruthStick);
+            
+            manWithAlligator = new Character("Florida Man Ultimate", 500f, 75f, 50f, 60.0f, Alligator);
 
-            manWithAlligator.Name = "Florida Man Ultimate";
-            manWithAlligator.Health = 500f;
-            manWithAlligator.Damage = 75f;
-            manWithAlligator.Defense = 50f;
-            manWithAlligator.Stamina = 60.0f;
-
-            gunDude.Name = "Florida with a gun";
-            gunDude.Health = 200f;
-            gunDude.Damage = 100f;
-            gunDude.Defense = 0f;
-            gunDude.Stamina = 100f;
-
-            manWithLargeStick.CurrentWeapon = TruthStick;
-            manWithAlligator.CurrentWeapon = Alligator;
-            gunDude.CurrentWeapon = Gun;
+            gunDude = new Character("Florida man with a gun", 200f, 100f, 0f, 100f, Gun);
 
             Enemies = new Character[3] { manWithLargeStick, gunDude, manWithAlligator };
         }
